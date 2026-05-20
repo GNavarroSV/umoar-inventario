@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -9,7 +10,6 @@ import { ChevronDownIcon, Cross2Icon, ExitIcon, HamburgerMenuIcon, PersonIcon } 
 import { AppSidebar } from './app-sidebar';
 import { getSectionMeta } from '../lib/navigation';
 import { useAuth } from '../hooks/auth/use-auth';
-import { BrandLogo } from './brand-logo';
 import { useLogout } from '../hooks/auth/use-logout';
 
 interface AppShellProps {
@@ -58,11 +58,9 @@ export function AppShell({ children }: AppShellProps) {
         <header className="topbar">
           <div className="topbar__left">
             <div className="topbar__brand">
-              <BrandLogo variant="compact" showText={false} />
-              <div>
-                <p className="eyebrow">UMOAR</p>
-                <span className="topbar__brand-text">Sistema de inventario</span>
-              </div>
+              <span className="topbar__brand-mark" aria-hidden="true">
+                <Image src="/umoar-logo.svg" alt="UMOAR" width={40} height={40} priority className="topbar__brand-image" />
+              </span>
             </div>
 
             <Dialog.Root open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

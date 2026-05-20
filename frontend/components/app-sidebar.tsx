@@ -1,12 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as Separator from '@radix-ui/react-separator';
 import { DashboardIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons';
 import { getVisibleNavigation } from '../lib/navigation';
 import type { AuthSession } from '../types/auth';
-import { BrandLogo } from './brand-logo';
 import { useLogout } from '../hooks/auth/use-logout';
 
 interface AppSidebarProps {
@@ -22,12 +22,8 @@ export function AppSidebar({ session, onNavigate }: AppSidebarProps) {
   return (
     <aside className="app-sidebar">
       <div className="app-sidebar__header">
-        <div className="app-sidebar__logo">
-          <BrandLogo variant="compact" showText={false} />
-        </div>
-        <div className="app-sidebar__title">
-          <p className="eyebrow">UMOAR</p>
-          <strong>Sistema de inventario</strong>
+        <div className="app-sidebar__logo" aria-hidden="true">
+          <Image src="/umoar-logo.svg" alt="UMOAR" width={40} height={40} className="app-sidebar__logo-image" />
         </div>
       </div>
 

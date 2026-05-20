@@ -109,7 +109,7 @@ export default function AssignmentsAdminPage() {
           <div className={styles.panelHeader}>
             <h2>Nueva asignación</h2>
             <p>
-              Usa <strong>CUSTODY</strong> cuando el responsable cambia definitivamente y <strong>LOAN</strong> para
+              Usa <strong>Cambio de custodia</strong> cuando el responsable cambia definitivamente y <strong>Custodia temporal</strong> para
               custodia temporal con devolución automática.
             </p>
           </div>
