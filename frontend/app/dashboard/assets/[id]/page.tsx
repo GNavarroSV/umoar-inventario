@@ -32,6 +32,12 @@ function valueOrDash(value?: string | number | null) {
   return value === null || value === undefined || value === '' ? '—' : String(value);
 }
 
+function formatAssignmentType(value?: string | null) {
+  if (value === 'LOAN') return 'Temporal';
+  if (value === 'CUSTODY') return 'Custodia';
+  return valueOrDash(value);
+}
+
 export default function AssetDetailPage() {
   const params = useParams<{ id: string }>();
   const assetId = Number(params.id);
@@ -45,7 +51,7 @@ export default function AssetDetailPage() {
     return <p>No se pudo cargar el activo.</p>;
   }
 
-  const asset = assetQuery.data as any;
+  const asset = assetQuery.data;
 
   return (
     <main className={styles.pageShell}>
@@ -93,27 +99,27 @@ export default function AssetDetailPage() {
         <dl className={styles.detailsGrid}>
           <div>
             <dt>Categoría</dt>
-            <dd>{valueOrDash(asset?.category?.name ?? asset?.categoryId)}</dd>
+            <dd>{valueOrDash((asset as any)?.category?.name ?? (asset as any)?.categoryId)}</dd>
           </div>
           <div>
             <dt>Responsable</dt>
-            <dd>{valueOrDash(asset?.responsiblePerson?.name ?? asset?.responsiblePersonId)}</dd>
+            <dd>{valueOrDash(asset?.responsiblePerson?.name)}</dd>
           </div>
           <div>
             <dt>Descripción</dt>
-            <dd>{valueOrDash(asset?.description)}</dd>
+            <dd>{valueOrDash((asset as any)?.description)}</dd>
           </div>
           <div>
             <dt>Centro de costo</dt>
-            <dd>{valueOrDash(asset?.costCenterId)}</dd>
+            <dd>{valueOrDash((asset as any)?.costCenterId)}</dd>
           </div>
           <div>
             <dt>Proveedor</dt>
-            <dd>{valueOrDash(asset?.supplier?.name ?? asset?.supplierId)}</dd>
+            <dd>{valueOrDash((asset as any)?.supplier?.name ?? (asset as any)?.supplierId)}</dd>
           </div>
           <div>
             <dt>Serie</dt>
-            <dd>{valueOrDash(asset?.serialNumber)}</dd>
+            <dd>{valueOrDash((asset as any)?.serialNumber)}</dd>
           </div>
         </dl>
       </section>
@@ -127,25 +133,60 @@ export default function AssetDetailPage() {
           </div>
           <div>
             <dt>Fecha de compra</dt>
-            <dd>{formatDate(asset?.purchaseDate)}</dd>
+            <dd>{formatDate((asset as any)?.purchaseDate)}</dd>
           </div>
           <div>
             <dt>Valor de compra</dt>
-            <dd>{formatCurrency(asset?.purchaseValue)}</dd>
+            <dd>{formatCurrency((asset as any)?.purchaseValue)}</dd>
           </div>
           <div>
             <dt>Garantía hasta</dt>
-            <dd>{formatDate(asset?.warrantyEndDate)}</dd>
+            <dd>{formatDate((asset as any)?.warrantyEndDate)}</dd>
           </div>
           <div>
             <dt>Meses de garantía</dt>
-            <dd>{valueOrDash(asset?.warrantyMonths)}</dd>
+            <dd>{valueOrDash((asset as any)?.warrantyMonths)}</dd>
           </div>
           <div>
             <dt>Depreciación</dt>
-            <dd>{valueOrDash(asset?.depreciationType)}</dd>
+            <dd>{valueOrDash((asset as any)?.depreciationType)}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className={styles.sectionCard}>
+        <h2 className={styles.sectionTitle}>Asignaciones y custodia</h2>
+
+        {Array.isArray(asset?.assignments) && asset.assignments.length > 0 ? (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Asignado a</th>
+                  <th>Responsable previo</th>
+                  <th>Inicio</th>
+                  <th>Vence</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {asset.assignments.map((assignment) => (
+                  <tr key={assignment.id}>
+                    <td>{formatAssignmentType(assignment.type)}</td>
+                    <td>{valueOrDash(assignment.assignedToPerson?.name)}</td>
+                    <td>{valueOrDash(assignment.previousResponsiblePerson?.name)}</td>
+                    <td>{formatDate(assignment.startDate)}</td>
+                    <td>{formatDate(assignment.dueDate)}</td>
+                    <td>{valueOrDash(assignment.status)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className={styles.emptyState}>No hay asignaciones registradas para este activo.</p>
+        )}
       </section>
 
       <section className={styles.sectionCard}>
@@ -153,9 +194,11 @@ export default function AssetDetailPage() {
 
         {Array.isArray(asset?.history) && asset.history.length > 0 ? (
           <ul className={styles.historyList}>
-            {asset.history.map((entry: any) => (
+            {asset.history.map((entry) => (
               <li key={entry.id} className={styles.historyItem}>
-                <strong>{entry.previousStatus} → {entry.newStatus}</strong>
+                <strong>
+                  {valueOrDash(entry.previousStatus)} → {valueOrDash(entry.newStatus)}
+                </strong>
                 <span>{valueOrDash(entry.changeReason)}</span>
                 <small>{formatDate(entry.createdAt)}</small>
               </li>

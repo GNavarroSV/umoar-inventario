@@ -9,7 +9,7 @@ export class CreateAssignmentDto {
 
   @Type(() => Number)
   @IsInt()
-  assignedToUserId: number;
+  assignedToPersonId: number;
 
   @Type(() => Number)
   @IsInt()
@@ -48,7 +48,7 @@ export class UpdateAssignmentDto {
   @Type(() => Number)
   @IsInt()
   @IsOptional()
-  assignedToUserId?: number;
+  assignedToPersonId?: number;
 
   @Type(() => Number)
   @IsInt()

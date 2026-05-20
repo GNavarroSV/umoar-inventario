@@ -16,6 +16,40 @@ export interface AssetResponseDto {
     id: number;
     name: string;
   };
+  assignments?: AssetAssignmentDto[];
+  history?: AssetHistoryDto[];
+}
+
+export interface AssetAssignmentDto {
+  id: number;
+  assetId: number;
+  assignedToPersonId: number;
+  assignedByUserId?: number | null;
+  previousResponsiblePersonId?: number | null;
+  type: string;
+  status: string;
+  startDate: string;
+  dueDate?: string | null;
+  returnDate?: string | null;
+  reason?: string | null;
+  notes?: string | null;
+  assignedToPerson: {
+    id: number;
+    name: string;
+    email?: string | null;
+    documentNumber?: string | null;
+  };
+  previousResponsiblePerson?: {
+    id: number;
+    name: string;
+    email?: string | null;
+    documentNumber?: string | null;
+  } | null;
+  assignedByUser?: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export interface CreateAssetDto {
@@ -55,13 +89,19 @@ export interface UpdateAssetStatusDto {
 export interface AssetHistoryDto {
   id: number;
   assetId: number;
-  action: string;
-  date: string;
-  reason?: string;
-  user?: {
+  eventType: string;
+  createdAt: string;
+  changeReason?: string | null;
+  previousStatus?: string | null;
+  newStatus?: string | null;
+  previousUser?: string | null;
+  newUser?: string | null;
+  notes?: string | null;
+  source?: string | null;
+  changedByUser?: {
     id: number;
     name: string;
-  };
+  } | null;
 }
 
 export interface AssetListParams {

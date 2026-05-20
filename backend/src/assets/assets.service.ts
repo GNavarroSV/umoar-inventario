@@ -138,6 +138,34 @@ export class AssetsService {
             email: true,
           },
         },
+        assignments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            assignedToPerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            previousResponsiblePerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            assignedByUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
         history: {
           orderBy: { createdAt: 'desc' },
           take: 10,
@@ -176,6 +204,34 @@ export class AssetsService {
             id: true,
             name: true,
             email: true,
+          },
+        },
+        assignments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            assignedToPerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            previousResponsiblePerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            assignedByUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -219,6 +275,34 @@ export class AssetsService {
             email: true,
           },
         },
+        assignments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            assignedToPerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            previousResponsiblePerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            assignedByUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -249,6 +333,34 @@ export class AssetsService {
             id: true,
             name: true,
             email: true,
+          },
+        },
+        assignments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            assignedToPerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            previousResponsiblePerson: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                documentNumber: true,
+              },
+            },
+            assignedByUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },

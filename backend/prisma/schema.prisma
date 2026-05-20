@@ -129,7 +129,6 @@ model User {
 
   role               Role              @relation(fields: [roleId], references: [id])
   history            AuditLog[]
-  assetAssignments   AssetAssignment[] @relation("AssignmentToUser")
   createdAssignments AssetAssignment[] @relation("AssignmentByUser")
   assetHistoryChanges AssetHistory[]   @relation("AssetHistoryChangedBy")
 
@@ -147,6 +146,8 @@ model Person {
   updatedAt       DateTime @updatedAt
 
   assets          Asset[]
+  assignmentsReceived AssetAssignment[] @relation("AssignmentToPerson")
+  previousAssignments AssetAssignment[] @relation("AssignmentPreviousResponsible")
 
   @@index([isActive])
   @@map("people")
@@ -277,8 +278,9 @@ model Asset {
 model AssetAssignment {
   id               Int              @id @default(autoincrement())
   assetId          Int
-  assignedToUserId  Int
+  assignedToPersonId Int              @map("assignedToUserId")
   assignedByUserId  Int?
+  previousResponsiblePersonId Int?
   type             AssignmentType
   status           AssignmentStatus @default(ACTIVE)
   startDate        DateTime         @default(now())
@@ -290,12 +292,14 @@ model AssetAssignment {
   updatedAt        DateTime         @updatedAt
 
   asset            Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assignedToUser   User             @relation("AssignmentToUser", fields: [assignedToUserId], references: [id])
+  assignedToPerson Person           @relation("AssignmentToPerson", fields: [assignedToPersonId], references: [id])
+  previousResponsiblePerson Person? @relation("AssignmentPreviousResponsible", fields: [previousResponsiblePersonId], references: [id], onDelete: SetNull)
   assignedByUser   User?            @relation("AssignmentByUser", fields: [assignedByUserId], references: [id], onDelete: SetNull)
 
   @@index([assetId])
-  @@index([assignedToUserId])
+  @@index([assignedToPersonId])
   @@index([assignedByUserId])
+  @@index([previousResponsiblePersonId])
   @@index([status])
   @@index([type])
   @@map("asset_assignments")
