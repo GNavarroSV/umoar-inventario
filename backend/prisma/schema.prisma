@@ -1,6 +1,3 @@
-// Prisma Schema - Sistema de Inventario
-// https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,9 +7,348 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// ENUMS
-// ============================================
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  type        RoleType
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  menus       RoleMenu[]
+  users       User[]
+
+  @@map("roles")
+}
+
+model Menu {
+  id        Int        @id @default(autoincrement())
+  name      String
+  label     String
+  path      String
+  icon      String?
+  order     Int        @default(0)
+  parent_id Int?
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  parent    Menu?      @relation("MenuParent", fields: [parent_id], references: [id])
+  children  Menu[]     @relation("MenuParent")
+  roles     RoleMenu[]
+
+  @@map("menus")
+}
+
+model RoleMenu {
+  id        Int      @id @default(autoincrement())
+  roleId    Int
+  menuId    Int
+  createdAt DateTime @default(now())
+  menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, menuId])
+  @@map("role_menus")
+}
+
+model User {
+  id                  Int               @id @default(autoincrement())
+  name                String
+  email               String            @unique
+  password            String
+  institutionalId     String?
+  isActive            Boolean           @default(true)
+  roleId              Int
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdAssignments  AssetAssignment[] @relation("AssignmentByUser")
+  assetHistoryChanges AssetHistory[]    @relation("AssetHistoryChangedBy")
+  importBatches       ImportBatch[]     @relation("ImportBatchCreatedByUser")
+  history             AuditLog[]
+  role                Role              @relation(fields: [roleId], references: [id])
+
+  @@map("users")
+}
+
+model Person {
+  id                  Int               @id @default(autoincrement())
+  name                String
+  email               String?           @unique
+  documentNumber      String?           @unique
+  phone               String?
+  isActive            Boolean           @default(true)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  assignmentsReceived AssetAssignment[] @relation("AssignmentToPerson")
+  previousAssignments AssetAssignment[] @relation("AssignmentPreviousResponsible")
+  assets              Asset[]
+
+  @@index([isActive])
+  @@map("people")
+}
+
+model CostCenter {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assets      Asset[]
+
+  @@index([isActive])
+  @@map("cost_centers")
+}
+
+model Supplier {
+  id           Int      @id @default(autoincrement())
+  name         String
+  taxId        String?  @unique
+  contactName  String?
+  contactEmail String?
+  phone        String?
+  address      String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  assets       Asset[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("suppliers")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assets      Asset[]
+
+  @@map("categories")
+}
+
+model Asset {
+  id                  Int                   @id @default(autoincrement())
+  code                String                @unique
+  externalLegacyId    String?               @unique
+  name                String
+  description         String?
+  categoryId          Int
+  quantity            Int                   @default(1)
+  responsiblePersonId Int                   @map("responsibleUserId")
+  location            String
+  costCenterId        Int?
+  acquisitionDate     DateTime
+  purchaseDate        DateTime?
+  disposalDate        DateTime?
+  status              AssetStatus           @default(OPERATIVO)
+  condition           String?
+  purchaseValue       Float
+  currentValue        Float
+  residualValue       Float?
+  supplierId          Int?
+  invoiceNumber       String?
+  purchaseOrder       String?
+  warrantyEndDate     DateTime?
+  warrantyMonths      Int?
+  depreciationType    DepreciationType      @default(LINEAR)
+  depreciationRate    Float?
+  depreciationMonths  Int?
+  serialNumber        String?
+  manufacturer        String?
+  model               String?
+  isActive            Boolean               @default(true)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  assignments         AssetAssignment[]
+  importItems         ImportBatchItem[]
+  history             AssetHistory[]
+  category            Category              @relation(fields: [categoryId], references: [id])
+  costCenter          CostCenter?           @relation(fields: [costCenterId], references: [id])
+  responsiblePerson   Person                @relation(fields: [responsiblePersonId], references: [id])
+  supplier            Supplier?             @relation(fields: [supplierId], references: [id])
+  depreciation        DepreciationSchedule?
+
+  @@index([categoryId])
+  @@index([responsiblePersonId])
+  @@index([costCenterId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([acquisitionDate])
+  @@index([invoiceNumber])
+  @@index([serialNumber])
+  @@map("assets")
+}
+
+enum ImportStrategy {
+  UPSERT
+  INSERT_ONLY
+  DRY_RUN
+}
+
+enum ImportBatchStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ImportRowStatus {
+  VALID
+  CREATED
+  UPDATED
+  SKIPPED
+  ERROR
+}
+
+model ImportBatch {
+  id              Int               @id @default(autoincrement())
+  fileName        String
+  fileHash        String?
+  strategy        ImportStrategy    @default(UPSERT)
+  status          ImportBatchStatus @default(PENDING)
+  totalRows       Int               @default(0)
+  processedRows   Int               @default(0)
+  createdRows     Int               @default(0)
+  updatedRows     Int               @default(0)
+  skippedRows     Int               @default(0)
+  errorRows       Int               @default(0)
+  notes           String?
+  createdByUserId Int?
+  processedAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  createdByUser   User?             @relation("ImportBatchCreatedByUser", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  items           ImportBatchItem[]
+
+  @@index([createdByUserId])
+  @@index([status])
+  @@map("import_batches")
+}
+
+model ImportBatchItem {
+  id               Int             @id @default(autoincrement())
+  batchId          Int
+  rowNumber        Int
+  externalLegacyId String?
+  assetId          Int?
+  status           ImportRowStatus @default(VALID)
+  action           String?
+  rawData          Json
+  changeSet        Json?
+  errorMessage     String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  batch            ImportBatch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  asset            Asset?          @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  @@index([batchId])
+  @@index([assetId])
+  @@index([status])
+  @@map("import_batch_items")
+}
+
+model AssetAssignment {
+  id                          Int              @id @default(autoincrement())
+  assetId                     Int
+  assignedToPersonId          Int              @map("assignedToUserId")
+  assignedByUserId            Int?
+  type                        AssignmentType
+  status                      AssignmentStatus @default(ACTIVE)
+  startDate                   DateTime         @default(now())
+  dueDate                     DateTime?
+  returnDate                  DateTime?
+  reason                      String?
+  notes                       String?
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+  previousResponsiblePersonId Int?
+  asset                       Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assignedByUser              User?            @relation("AssignmentByUser", fields: [assignedByUserId], references: [id])
+  assignedToPerson            Person           @relation("AssignmentToPerson", fields: [assignedToPersonId], references: [id])
+  previousResponsiblePerson   Person?          @relation("AssignmentPreviousResponsible", fields: [previousResponsiblePersonId], references: [id])
+
+  @@index([assetId])
+  @@index([assignedToPersonId])
+  @@index([assignedByUserId])
+  @@index([previousResponsiblePersonId])
+  @@index([status])
+  @@index([type])
+  @@map("asset_assignments")
+}
+
+model AssetHistory {
+  id               Int                   @id @default(autoincrement())
+  assetId          Int
+  changedByUserId  Int?
+  eventType        AssetHistoryEventType @default(UPDATED)
+  fieldName        String?
+  oldData          Json?
+  newData          Json?
+  changeSet        Json?
+  previousStatus   AssetStatus?
+  newStatus        AssetStatus?
+  previousValue    Float?
+  newValue         Float?
+  previousLocation String?
+  newLocation      String?
+  previousUser     String?
+  newUser          String?
+  changeReason     String?
+  notes            String?
+  source           String?
+  createdAt        DateTime              @default(now())
+  asset            Asset                 @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  changedByUser    User?                 @relation("AssetHistoryChangedBy", fields: [changedByUserId], references: [id])
+
+  @@index([assetId])
+  @@index([changedByUserId])
+  @@index([eventType])
+  @@map("asset_history")
+}
+
+model DepreciationSchedule {
+  id                Int              @id @default(autoincrement())
+  assetId           Int              @unique
+  initialValue      Float
+  depreciationType  DepreciationType
+  rate              Float
+  months            Int
+  monthlyDeprec     Float
+  accumulatedDeprec Float            @default(0.0)
+  remainingMonths   Int
+  startDate         DateTime
+  endDate           DateTime
+  nextDeprecDate    DateTime
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  asset             Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("depreciation_schedules")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  entity    String
+  entityId  String
+  oldValues String?
+  newValues String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
 
 enum RoleType {
   ADMIN
@@ -21,18 +357,18 @@ enum RoleType {
 }
 
 enum AssetStatus {
-  OPERATIVO       // Funcionando correctamente
-  OBSOLETO        // Fuera de uso, muy antiguo
-  MAL_ESTADO      // Dañado o con problemas
-  DESUSO          // No se usa actualmente
-  REPARACION      // En proceso de reparación
-  DESCARTADO      // Retirado del inventario
+  OPERATIVO
+  OBSOLETO
+  MAL_ESTADO
+  DESUSO
+  REPARACION
+  DESCARTADO
 }
 
 enum DepreciationType {
-  LINEAR          // Depreciación lineal
-  ACCELERATED     // Depreciación acelerada
-  UNITS_PRODUCED  // Por unidades producidas
+  LINEAR
+  ACCELERATED
+  UNITS_PRODUCED
 }
 
 enum AssignmentType {
@@ -56,337 +392,4 @@ enum AssetHistoryEventType {
   LOANED
   RETURNED
   DISPOSED
-}
-
-// ============================================
-// ROLES Y MENUS
-// ============================================
-
-model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  type        RoleType
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  users       User[]
-  menus       RoleMenu[]
-  
-  @@map("roles")
-}
-
-// ============================================
-// MENU Y NAVEGACIÓN
-// ============================================
-
-model Menu {
-  id          Int      @id @default(autoincrement())
-  name        String
-  label       String   // Texto mostrado en UI
-  path        String   // Ruta del menú (ej: "/dashboard", "/assets")
-  icon        String?  // Nombre del icono
-  order       Int      @default(0)
-  parent_id   Int?     // Para menús anidados
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  roles       RoleMenu[]
-  children    Menu[]   @relation("MenuParent")
-  parent      Menu?    @relation("MenuParent", fields: [parent_id], references: [id], onDelete: SetNull)
-
-  @@map("menus")
-}
-
-model RoleMenu {
-  id        Int      @id @default(autoincrement())
-  roleId    Int
-  menuId    Int
-  createdAt DateTime @default(now())
-
-  role Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  menu Menu  @relation(fields: [menuId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, menuId])
-  @@map("role_menus")
-}
-
-// ============================================
-// USUARIOS
-// ============================================
-
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  institutionalId String?
-  isActive  Boolean  @default(true)
-  roleId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  role               Role              @relation(fields: [roleId], references: [id])
-  history            AuditLog[]
-  createdAssignments AssetAssignment[] @relation("AssignmentByUser")
-  assetHistoryChanges AssetHistory[]   @relation("AssetHistoryChangedBy")
-
-  @@map("users")
-}
-
-model Person {
-  id              Int      @id @default(autoincrement())
-  name            String
-  email           String?  @unique
-  documentNumber  String?  @unique
-  phone           String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  assets          Asset[]
-  assignmentsReceived AssetAssignment[] @relation("AssignmentToPerson")
-  previousAssignments AssetAssignment[] @relation("AssignmentPreviousResponsible")
-
-  @@index([isActive])
-  @@map("people")
-}
-
-model CostCenter {
-  id          Int      @id @default(autoincrement())
-  code        String   @unique
-  name        String
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  assets      Asset[]
-
-  @@index([isActive])
-  @@map("cost_centers")
-}
-
-model Supplier {
-  id           Int      @id @default(autoincrement())
-  name         String
-  taxId        String?  @unique
-  contactName  String?
-  contactEmail String?
-  phone        String?
-  address      String?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  assets       Asset[]
-
-  @@index([name])
-  @@index([isActive])
-  @@map("suppliers")
-}
-
-// ============================================
-// ACTIVOS / INVENTARIO
-// ============================================
-
-model Category {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  assets Asset[]
-
-  @@map("categories")
-}
-
-model Asset {
-  id                    Int           @id @default(autoincrement())
-  
-  // Información básica
-  code                  String        @unique // Código generado automáticamente
-  name                  String
-  description           String?
-  categoryId            Int
-  
-  // Usuario responsable
-  responsiblePersonId   Int           @map("responsibleUserId")
-  
-  // Ubicación
-  location              String
-  costCenterId          Int?
-  
-  // Fechas importantes
-  acquisitionDate       DateTime      // Fecha de adquisición
-  purchaseDate          DateTime?     // Fecha de compra
-  disposalDate          DateTime?     // Fecha de disposición (cuando se descarta)
-  
-  // Estado y condición
-  status                AssetStatus   @default(OPERATIVO)
-  condition             String?       // Descripción de condición
-  
-  // Valores financieros
-  purchaseValue         Float         // Valor de compra original
-  currentValue          Float         // Valor actual
-  residualValue         Float?        // Valor residual estimado
-  supplierId            Int?
-  invoiceNumber         String?
-  purchaseOrder         String?
-  warrantyEndDate       DateTime?
-  warrantyMonths        Int?
-  
-  // Depreciación
-  depreciationType      DepreciationType @default(LINEAR)
-  depreciationRate      Float?        // Tasa de depreciación (%)
-  depreciationMonths    Int?          // Meses de depreciación
-  
-  // Datos técnicos
-  serialNumber          String?
-  manufacturer          String?
-  model                 String?
-  
-  // Metadatos
-  isActive              Boolean       @default(true)
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-
-  // Relaciones
-  category              Category      @relation(fields: [categoryId], references: [id])
-  responsiblePerson     Person        @relation(fields: [responsiblePersonId], references: [id])
-  costCenter            CostCenter?   @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
-  supplier              Supplier?     @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  
-  history               AssetHistory[]
-  depreciation          DepreciationSchedule?
-  assignments           AssetAssignment[]
-
-  @@index([categoryId])
-  @@index([responsiblePersonId])
-  @@index([costCenterId])
-  @@index([supplierId])
-  @@index([status])
-  @@index([acquisitionDate])
-  @@index([invoiceNumber])
-  @@index([serialNumber])
-  @@map("assets")
-}
-
-model AssetAssignment {
-  id               Int              @id @default(autoincrement())
-  assetId          Int
-  assignedToPersonId Int              @map("assignedToUserId")
-  assignedByUserId  Int?
-  previousResponsiblePersonId Int?
-  type             AssignmentType
-  status           AssignmentStatus @default(ACTIVE)
-  startDate        DateTime         @default(now())
-  dueDate          DateTime?
-  returnDate       DateTime?
-  reason           String?
-  notes            String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  asset            Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assignedToPerson Person           @relation("AssignmentToPerson", fields: [assignedToPersonId], references: [id])
-  previousResponsiblePerson Person? @relation("AssignmentPreviousResponsible", fields: [previousResponsiblePersonId], references: [id], onDelete: SetNull)
-  assignedByUser   User?            @relation("AssignmentByUser", fields: [assignedByUserId], references: [id], onDelete: SetNull)
-
-  @@index([assetId])
-  @@index([assignedToPersonId])
-  @@index([assignedByUserId])
-  @@index([previousResponsiblePersonId])
-  @@index([status])
-  @@index([type])
-  @@map("asset_assignments")
-}
-
-model AssetHistory {
-  id          Int      @id @default(autoincrement())
-  assetId     Int
-  changedByUserId Int?
-  eventType   AssetHistoryEventType @default(UPDATED)
-  fieldName   String?
-  oldData     Json?
-  newData     Json?
-  changeSet   Json?
-  
-  // Cambios registrados
-  previousStatus    AssetStatus?
-  newStatus         AssetStatus?
-  previousValue     Float?
-  newValue          Float?
-  previousLocation  String?
-  newLocation       String?
-  previousUser      String?
-  newUser           String?
-  
-  // Metadata
-  changeReason      String?
-  notes             String?
-  source            String?
-  createdAt         DateTime @default(now())
-
-  asset             Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  changedByUser     User? @relation("AssetHistoryChangedBy", fields: [changedByUserId], references: [id], onDelete: SetNull)
-
-  @@index([assetId])
-  @@index([changedByUserId])
-  @@index([eventType])
-  @@map("asset_history")
-}
-
-model DepreciationSchedule {
-  id              Int      @id @default(autoincrement())
-  assetId         Int      @unique
-  
-  // Detalles de depreciación
-  initialValue    Float
-  depreciationType DepreciationType
-  rate            Float           // Tasa anual de depreciación
-  months          Int             // Período de depreciación en meses
-  
-  // Cálculos
-  monthlyDeprec    Float           // Depreciación mensual
-  accumulatedDeprec Float @default(0.0)
-  remainingMonths  Int
-  
-  // Fechas
-  startDate        DateTime
-  endDate          DateTime
-  nextDeprecDate   DateTime
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  asset            Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
-
-  @@map("depreciation_schedules")
-}
-
-// ============================================
-// AUDITORÍA
-// ============================================
-
-model AuditLog {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  action      String   // ej: "CREATE_ASSET", "UPDATE_ASSET", "DELETE_ASSET"
-  entity      String   // ej: "Asset", "User"
-  entityId    String
-  oldValues   String?  // JSON stringificado
-  newValues   String?  // JSON stringificado
-  ipAddress   String?
-  createdAt   DateTime @default(now())
-
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([entity])
-  @@index([createdAt])
-  @@map("audit_logs")
 }

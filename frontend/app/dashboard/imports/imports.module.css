@@ -1,0 +1,99 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero h1 {
+  margin: 4px 0 0;
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.lead {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  max-width: 760px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(18, 48, 26, 0.08);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  color: var(--brand-950);
+}
+
+.cardHeader p {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text);
+  display: grid;
+  gap: 6px;
+}
+
+.sampleBox {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fbfdfb;
+}
+
+.sampleBox strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--brand-950);
+}
+
+.downloadNote {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 900px) {
+  .grid,
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}

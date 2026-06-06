@@ -38,9 +38,6 @@ export class MenusController {
     @Param('roleId', ParseIntPipe) roleId: number,
     @Body() assignDto: AssignMenuToRoleDto,
   ) {
-    return this.menusService.assignMenusToRole({
-      roleId,
-      menuIds: assignDto.menuIds,
-    });
+    return this.menusService.assignMenusToRole(roleId, assignDto);
   }
 }

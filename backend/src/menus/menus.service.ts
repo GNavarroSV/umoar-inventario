@@ -115,8 +115,8 @@ export class MenusService {
     });
   }
 
-  async assignMenusToRole(assignDto: AssignMenuToRoleDto) {
-    const role = await this.prisma.role.findUnique({ where: { id: assignDto.roleId } });
+  async assignMenusToRole(roleId: number, assignDto: AssignMenuToRoleDto) {
+    const role = await this.prisma.role.findUnique({ where: { id: roleId } });
 
     if (!role) {
       throw new NotFoundException('Rol no encontrado');
@@ -127,14 +127,14 @@ export class MenusService {
     }
 
     await this.prisma.roleMenu.deleteMany({
-      where: { roleId: assignDto.roleId },
+      where: { roleId },
     });
 
     return Promise.all(
       assignDto.menuIds.map((menuId) =>
         this.prisma.roleMenu.create({
           data: {
-            roleId: assignDto.roleId,
+            roleId,
             menuId,
           },
         }),

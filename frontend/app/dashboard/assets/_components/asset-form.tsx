@@ -10,9 +10,11 @@ import { useSuppliersQuery } from '../../../../hooks/suppliers/use-suppliers';
 import styles from '../assets.module.css';
 
 export type AssetFormValues = {
+  externalLegacyId: string;
   name: string;
   description: string;
   categoryId: string;
+  quantity: string;
   responsiblePersonId: string;
   location: string;
   costCenterId: string;
@@ -48,9 +50,11 @@ export interface AssetFormProps {
 
 export interface AssetLike {
   code?: string;
+  externalLegacyId?: string | null;
   name?: string;
   description?: string | null;
   categoryId?: number | null;
+  quantity?: number | null;
   responsiblePersonId?: number | null;
   location?: string | null;
   costCenterId?: number | null;
@@ -74,9 +78,11 @@ export interface AssetLike {
 }
 
 const emptyValues: AssetFormValues = {
+  externalLegacyId: '',
   name: '',
   description: '',
   categoryId: '',
+  quantity: '1',
   responsiblePersonId: '',
   location: '',
   costCenterId: '',
@@ -155,9 +161,11 @@ export function createAssetFormValues(initialValues?: Partial<AssetFormValues>):
 
 export function assetToFormValues(asset: AssetLike): AssetFormValues {
   return createAssetFormValues({
+    externalLegacyId: asset.externalLegacyId ?? '',
     name: asset.name ?? '',
     description: asset.description ?? '',
     categoryId: asset.categoryId?.toString() ?? '',
+    quantity: asset.quantity?.toString() ?? '1',
     responsiblePersonId: asset.responsiblePersonId?.toString() ?? '',
     location: asset.location ?? '',
     costCenterId: asset.costCenterId?.toString() ?? '',
@@ -183,9 +191,11 @@ export function assetToFormValues(asset: AssetLike): AssetFormValues {
 
 export function buildCreateAssetPayload(values: AssetFormValues): CreateAssetDto {
   return {
+    externalLegacyId: values.externalLegacyId.trim() || undefined,
     name: values.name.trim(),
     description: values.description.trim() || undefined,
     categoryId: Number(values.categoryId),
+    quantity: values.quantity ? toRequiredNumber(values.quantity, 'Cantidad') : 1,
     responsiblePersonId: Number(values.responsiblePersonId),
     location: values.location.trim(),
     costCenterId: values.costCenterId.trim() ? Number(values.costCenterId) : undefined,
@@ -209,9 +219,11 @@ export function buildCreateAssetPayload(values: AssetFormValues): CreateAssetDto
 
 export function buildUpdateAssetPayload(values: AssetFormValues): UpdateAssetDto {
   return {
+    externalLegacyId: values.externalLegacyId.trim() || undefined,
     name: values.name.trim() || undefined,
     description: values.description.trim() || undefined,
     categoryId: values.categoryId.trim() ? Number(values.categoryId) : undefined,
+    quantity: values.quantity ? toRequiredNumber(values.quantity, 'Cantidad') : undefined,
     responsiblePersonId: values.responsiblePersonId.trim() ? Number(values.responsiblePersonId) : undefined,
     location: values.location.trim() || undefined,
     costCenterId: values.costCenterId.trim() ? Number(values.costCenterId) : undefined,
@@ -287,6 +299,11 @@ export function AssetForm({
         <h2 className={styles.sectionTitle}>Información general</h2>
         <div className={styles.grid2}>
           <label className={styles.field}>
+            <span>Identificador legado</span>
+            <input className="input" value={values.externalLegacyId} onChange={handleChange('externalLegacyId')} placeholder="Opcional para importaciones" />
+          </label>
+
+          <label className={styles.field}>
             <span>Nombre *</span>
             <input className="input" value={values.name} onChange={handleChange('name')} required />
           </label>
@@ -318,6 +335,11 @@ export function AssetForm({
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className={styles.field}>
+            <span>Cantidad *</span>
+            <input type="number" className="input" min="1" step="1" value={values.quantity} onChange={handleChange('quantity')} required />
           </label>
 
           <label className={styles.field}>

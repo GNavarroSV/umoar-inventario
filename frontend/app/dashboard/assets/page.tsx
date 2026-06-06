@@ -8,6 +8,7 @@ type AssetItem = {
   id: number;
   code: string;
   name: string;
+  quantity: number;
   status: string;
   location: string;
   currentValue: number;
@@ -47,6 +48,7 @@ export default function AssetsPage() {
             <tr>
               <th>Código</th>
               <th>Nombre</th>
+              <th>Cantidad</th>
               <th>Responsable</th>
               <th>Estado</th>
               <th>Ubicación</th>
@@ -57,14 +59,14 @@ export default function AssetsPage() {
           <tbody>
             {assets.length === 0 ? (
               <tr>
-                <td colSpan={6}>No hay activos registrados.</td>
-                <td colSpan={7}>No hay activos registrados.</td>
+                <td colSpan={8}>No hay activos registrados.</td>
               </tr>
             ) : (
               assets.map((asset) => (
                 <tr key={asset.id}>
                   <td>{asset.code}</td>
                   <td>{asset.name}</td>
+                  <td>{asset.quantity}</td>
                   <td>{asset.responsiblePerson?.name ?? '—'}</td>
                   <td>{asset.status}</td>
                   <td>{asset.location}</td>

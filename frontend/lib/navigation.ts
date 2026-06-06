@@ -49,6 +49,12 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
         description: 'Entregas, prestamos y devoluciones',
         icon: IdCardIcon,
       },
+      {
+        label: 'Carga masiva',
+        href: '/dashboard/imports',
+        description: 'Plantillas y carga inicial de activos',
+        icon: TableIcon,
+      },
     ],
   },
   {
@@ -115,6 +121,11 @@ export const SECTION_META: Record<string, SectionMeta> = {
     title: 'Custodia y prestamos',
     description: 'Controla asignaciones, prestamos y devoluciones.',
     eyebrow: 'Seguimiento de activos',
+  },
+  imports: {
+    title: 'Carga masiva',
+    description: 'Descarga plantillas para carga inicial y actualizaciones masivas.',
+    eyebrow: 'Integracion de datos',
   },
   'cost-centers': {
     title: 'Centros de costo',

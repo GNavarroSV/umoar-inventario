@@ -11,6 +11,7 @@ import { SuppliersModule } from './suppliers/suppliers.module';
 import { CategoriesModule } from './categories/categories.module';
 import { PeopleModule } from './people/people.module';
 import { AssignmentsModule } from './assignments/assignments.module';
+import { ImportsModule } from './imports/imports.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -29,6 +30,7 @@ import { HealthController } from './health.controller';
     CategoriesModule,
     PeopleModule,
     AssignmentsModule,
+    ImportsModule,
   ],
   controllers: [HealthController],
   providers: [],

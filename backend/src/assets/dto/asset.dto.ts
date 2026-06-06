@@ -13,6 +13,10 @@ import { AssetStatus, DepreciationType } from '@prisma/client';
 
 export class CreateAssetDto {
   @IsString()
+  @IsOptional()
+  externalLegacyId?: string;
+
+  @IsString()
   @IsNotEmpty()
   name: string;
 
@@ -24,6 +28,12 @@ export class CreateAssetDto {
   @IsInt()
   @IsNotEmpty()
   categoryId: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  quantity?: number;
 
   @Type(() => Number)
   @IsInt()
@@ -111,17 +121,23 @@ export class CreateAssetDto {
 export class UpdateAssetDto {
   @IsString()
   @IsOptional()
+  externalLegacyId?: string;
+
+  @IsString()
+  @IsOptional()
   name?: string;
 
   @IsString()
   @IsOptional()
   description?: string;
 
-  @IsString()
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
   categoryId?: number;
 
-  @IsString()
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
   responsiblePersonId?: number;
 
@@ -129,9 +145,16 @@ export class UpdateAssetDto {
   @IsOptional()
   location?: string;
 
-  @IsString()
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
   costCenterId?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  quantity?: number;
 
   @IsDateString()
   @IsOptional()
@@ -215,9 +238,11 @@ export class UpdateAssetDto {
 export class AssetResponseDto {
   id: number;
   code: string;
+  externalLegacyId?: string | null;
   name: string;
   status: AssetStatus;
   location: string;
+  quantity: number;
   currentValue: number;
   acquisitionDate: Date;
   responsiblePerson: {

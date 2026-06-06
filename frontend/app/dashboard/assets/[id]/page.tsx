@@ -89,6 +89,11 @@ export default function AssetDetailPage() {
         </article>
 
         <article className={styles.summaryCard}>
+          <span className={styles.summaryLabel}>Cantidad</span>
+          <strong>{valueOrDash((asset as any)?.quantity)}</strong>
+        </article>
+
+        <article className={styles.summaryCard}>
           <span className={styles.summaryLabel}>Ubicación</span>
           <strong>{valueOrDash(asset?.location)}</strong>
         </article>
@@ -108,6 +113,10 @@ export default function AssetDetailPage() {
           <div>
             <dt>Descripción</dt>
             <dd>{valueOrDash((asset as any)?.description)}</dd>
+          </div>
+          <div>
+            <dt>Identificador legado</dt>
+            <dd>{valueOrDash((asset as any)?.externalLegacyId)}</dd>
           </div>
           <div>
             <dt>Centro de costo</dt>
@@ -138,6 +147,10 @@ export default function AssetDetailPage() {
           <div>
             <dt>Valor de compra</dt>
             <dd>{formatCurrency((asset as any)?.purchaseValue)}</dd>
+          </div>
+          <div>
+            <dt>Cantidad</dt>
+            <dd>{valueOrDash((asset as any)?.quantity)}</dd>
           </div>
           <div>
             <dt>Garantía hasta</dt>

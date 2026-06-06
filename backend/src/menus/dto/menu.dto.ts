@@ -61,10 +61,6 @@ export class UpdateMenuDto {
 
 export class AssignMenuToRoleDto {
   @Type(() => Number)
-  @IsInt()
-  roleId: number;
-
-  @Type(() => Number)
   @IsArray()
   @IsInt({ each: true })
   menuIds: number[];

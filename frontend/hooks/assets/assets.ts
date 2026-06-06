@@ -7,9 +7,11 @@ import { useAuthContext } from '../../contexts/auth-context';
 export interface AssetResponseDto {
   id: number;
   code: string;
+  externalLegacyId?: string | null;
   name: string;
   status: string;
   location: string;
+  quantity: number;
   currentValue: number;
   acquisitionDate: string;
   responsiblePerson: {
@@ -53,9 +55,11 @@ export interface AssetAssignmentDto {
 }
 
 export interface CreateAssetDto {
+  externalLegacyId?: string;
   name: string;
   description?: string;
   categoryId: number;
+  quantity?: number;
   responsiblePersonId: number;
   location: string;
   costCenterId?: number;

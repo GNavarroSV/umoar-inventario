@@ -45,9 +45,11 @@ export class AssetsService {
     const asset = await this.prisma.asset.create({
       data: {
         code,
+        externalLegacyId: createAssetDto.externalLegacyId,
         name: createAssetDto.name,
         description: createAssetDto.description,
         categoryId: createAssetDto.categoryId,
+        quantity: createAssetDto.quantity ?? 1,
         responsiblePersonId: createAssetDto.responsiblePersonId,
         location: createAssetDto.location,
         costCenterId: createAssetDto.costCenterId,
